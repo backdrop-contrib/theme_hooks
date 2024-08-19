@@ -1,0 +1,4 @@
+name = Theme Hooks
+description = "Allows backdrop themes to implement common module hooks such as defining blocks, menus and layouts"
+backdrop = 1.x
+type = module

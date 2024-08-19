@@ -1,0 +1,57 @@
+<?php
+/**
+ * @file
+ * Allow themes to implement common api hooks usually only available to modules.
+ */
+
+
+function theme_hooks_layout_info()
+{
+  return _theme_hooks_call_all_array('layout_info');
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function theme_hooks_block_info() {
+  return _theme_hooks_call_all_array('block_info');
+}
+
+/**
+ * Implements hook_theme().
+ */
+function theme_hooks_theme()
+{
+  return _theme_hooks_call_all_array('theme');
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function theme_hooks_block_view($delta) {
+  return [
+    'subject' => '',
+    'content' => ['#markup' => theme($delta)]
+  ];
+}
+
+/**
+ * Allow all installed themes to contribute to the output of the given hook.
+ */
+function _theme_hooks_call_all_array($hook) {
+  $out = [];
+  foreach (list_themes() as $theme_info) {
+    // If this is a theme key, load the matching template.php file.
+    if ($theme_path = backdrop_get_path('theme', $theme_info->name)) {
+      if (file_exists($theme_path . '/template.php')) {
+        include_once $theme_path . '/template.php';
+      }
+    }
+
+    $function = $theme_info->name . "_" . $hook;
+    if (function_exists($function)) {
+      $out += (array)call_user_func($function);
+    }
+  }
+  return $out;
+}
