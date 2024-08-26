@@ -36,9 +36,33 @@ function theme_hooks_block_view($delta) {
 }
 
 /**
+ * Implements hook_entity_view_mode_info().
+ */
+function theme_hooks_entity_view_mode_info() {
+  return _theme_hooks_call_all_array('entity_view_mode_info');
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function theme_hooks_form_alter(&$form, &$form_state, $form_id) {
+  foreach (_theme_hooks_theme_functions('form_alter') as $function) {
+    $function($form, $form_state, $form_id);
+  }
+}
+
+/**
  * Allow all installed themes to contribute to the output of the given hook.
  */
-function _theme_hooks_call_all_array($hook) {
+function _theme_hooks_call_all_array($hook, ...$args) {
+  $out = [];
+  foreach (_theme_hooks_theme_functions($hook) as $function) {
+    $out += (array)call_user_func_array($function, $args);
+  }
+  return $out;
+}
+
+function _theme_hooks_theme_functions($hook) {
   $out = [];
   foreach (list_themes() as $theme_info) {
     // If this is a theme key, load the matching template.php file.
@@ -50,7 +74,7 @@ function _theme_hooks_call_all_array($hook) {
 
     $function = $theme_info->name . "_" . $hook;
     if (function_exists($function)) {
-      $out += (array)call_user_func($function);
+      $out[] = $function;
     }
   }
   return $out;
