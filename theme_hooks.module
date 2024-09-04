@@ -7,7 +7,32 @@
 
 function theme_hooks_layout_info()
 {
-  return _theme_hooks_call_all_array('layout_info');
+  $self = backdrop_get_path('module', 'theme_hooks');
+  $out = [];
+  foreach (_theme_hooks_theme_functions('layout_info') as $function) {
+    $theme = substr($function, 0, -(strlen('_theme_hooks')));
+    $relative = relativePath($self, backdrop_get_path('theme', $theme));
+    foreach(call_user_func_array($function, []) as $name => $layout) {
+      $layout['path'] = $relative . '/' . $layout['path'];
+      $out[$name] = $layout;
+    }
+  }
+  return $out;
+}
+
+/**
+ * From https://www.php.net/manual/en/function.realpath.php#105876
+ */
+function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
+{
+  $arFrom = explode($ps, rtrim($from, $ps));
+  $arTo = explode($ps, rtrim($to, $ps));
+  while(count($arFrom) && count($arTo) && ($arFrom[0] == $arTo[0]))
+  {
+    array_shift($arFrom);
+    array_shift($arTo);
+  }
+  return str_pad("", count($arFrom) * 3, '..'.$ps).implode($ps, $arTo);
 }
 
 /**
@@ -50,6 +75,7 @@ function theme_hooks_form_alter(&$form, &$form_state, $form_id) {
     $function($form, $form_state, $form_id);
   }
 }
+
 
 /**
  * Allow all installed themes to contribute to the output of the given hook.
