@@ -5,6 +5,9 @@
  */
 
 
+ /**
+  * Implements hook_layout_info()
+  */
 function theme_hooks_layout_info()
 {
   $self = backdrop_get_path('module', 'theme_hooks');
@@ -20,6 +23,8 @@ function theme_hooks_layout_info()
   return $out;
 }
 
+
+
 /**
  * From https://www.php.net/manual/en/function.realpath.php#105876
  */
@@ -33,6 +38,22 @@ function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
     array_shift($arTo);
   }
   return str_pad("", count($arFrom) * 3, '..'.$ps).implode($ps, $arTo);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function theme_hooks_menu() {
+  return _theme_hooks_call_all_array('menu');
+}
+
+/**
+ * Implements hook_admin_paths_alter().
+ */
+function theme_hooks_admin_paths_alter(&$paths) {
+  foreach (_theme_hooks_theme_functions('admin_paths_alter') as $function) {
+    $function($paths);
+  }
 }
 
 /**
